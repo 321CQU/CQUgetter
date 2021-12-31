@@ -1,9 +1,9 @@
 from typing import List, Dict, Any, Union, Optional
 from mycqu.auth import login
 from mycqu.mycqu import access_mycqu
-from mycqu.exam import get_exam_raw
-from mycqu.course import get_course_raw
-from mycqu.score import get_score_raw
+from mycqu.exam import Exam
+from mycqu.course import CourseTimetable, CQUSession
+from mycqu.score import Score
 from requests import Session
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -17,32 +17,21 @@ from browsermobproxy import Server
 import time
 import requests
 import json
-import pymysql
-
-
-def _explain_response(data: List, attrs: List, need_upper: bool = True) -> List[Dict]:
-    values = []
-    try:
-        for item in data:
-            value = {}
-            for attr in attrs:
-                if need_upper:
-                    value[attr[:1].upper() + attr[1:]] = item[attr]
-                else:
-                    value[attr] = item[attr]
-            values.append(value)
-    except:
-        pass
-    return values
 
 
 class CQUGetter:
-    def __init__(self, sid=None, use_selenium=False, debug=False):
-        self.authorization = None
-        self.session = None
-        self.is_success = False
-        self.sid = sid
-        self.use_selenium = use_selenium
+    """
+    将mycqu和selenium+proxy方案实现的重庆大学各类信息查询类
+    目前仅支持chromedriver
+    """
+    def __init__(self, use_selenium=False, debug=False) -> None:
+        """
+        :param use_selenium: 是否使用selenium+proxy方案
+        :param debug: 是否显示selenium浏览器界面
+        """
+        self.is_success = False     # 用于确定是否已经登陆
+        self.use_selenium = use_selenium        # 用于选择是否要调用selenium的方法
+
         if self.use_selenium:
             chrome_options = Options()
             chrome_options.add_argument('--no-sandbox')
@@ -55,9 +44,19 @@ class CQUGetter:
 
             if not debug:
                 chrome_options.add_argument('--headless')
-            self.driver = webdriver.Chrome(options=chrome_options, service=chrome_server)  # , service=chrome_server
 
-    def is_match(self, username, password):
+            # 这里有在服务器部署时出现的玄学错误，当我没有显示指定chromedriver位置时，运行报错，因此建议指定一下driver位置
+            self.driver = webdriver.Chrome(options=chrome_options, service=chrome_server)
+        else:
+            self.session = None
+
+    def login(self, username: str, password: str) -> bool:
+        """
+
+        :param username: 统一身份认证账号
+        :param password: 统一身份认证密码
+        :return: is_success: 是否登陆成功
+        """
         if self.use_selenium:
             self.driver.get(
                 'http://authserver.cqu.edu.cn/authserver/login?service=http%3A%2F%2Fmy.cqu.edu.cn%2Fauthserver%2Fauthentication%2Fcas')
@@ -79,7 +78,7 @@ class CQUGetter:
             try:
                 self.session = Session()
                 login(self.session, username, password)
-                self.authorization = access_mycqu(self.session)['Authorization']
+                access_mycqu(self.session)
             except:
                 self.is_success = False
                 return False
@@ -87,11 +86,9 @@ class CQUGetter:
                 self.is_success = True
                 return True
 
-    def get_score(self, connection, cursor, need_all=False):
+    def get_score(self, need_all=False):
         if not self.is_success:
             return
-        score_log = {}
-        temp = {}
         if self.use_selenium:
             # TODO:将selenium成绩查询功能进行完全迁移
             try:
@@ -110,35 +107,25 @@ class CQUGetter:
                 }
                 res = requests.get('http://my.cqu.edu.cn/api/sam/score/student/score', headers=headers)
                 data = json.loads(res.content)['data']
+                score = []
+                for term, courses in data.items():
+                    for course in courses:
+                        score.append(Score.from_dict(course))
+                    if not need_all:
+                        break
         else:
             try:
-                data = get_score_raw(self.session)
+                # data = get_score_raw(self.session)
+                score = Score.fetch(self.session)
+                if not need_all:
+                    now_session = CQUSession.fetch()[1]
+                    score = [item for item in score if item.session == now_session]
             except:
                 return
 
-        for term, courses in data.items():
-            temp[term] = _explain_response(courses, ['courseName', 'courseCode', 'courseCredit',
-                                                     'effectiveScoreShow', 'instructorName', 'studyNature',
-                                                     'courseNature'])
-            score_log[term] = temp[term]
-            if not need_all:
-                break
-        for term, course in temp.items():
-            for attrs in course:
-                try:
-                    sql = "call insertScore(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                    cursor.execute(sql, (
-                        self.sid, attrs['CourseName'], attrs['CourseCode'], float(attrs['CourseCredit']),
-                        attrs['EffectiveScoreShow'], attrs['InstructorName'], attrs['StudyNature'],
-                        attrs['CourseNature'], term))
-                except:
-                    connection.rollback()
-                else:
-                    connection.commit()
+        return score
 
-        return score_log
-
-    def get_exam(self):
+    def get_exam(self, sid):
         if not self.is_success:
             return
         if self.use_selenium:
@@ -158,21 +145,20 @@ class CQUGetter:
                         _content = _response['content']
                         _result = json.loads(_content['text'])
                         data = _result['data']['content']
-                        exams = _explain_response(data,
-                                                       ['roomName', 'startTime', 'endTime', 'courseName', 'courseCode',
-                                                        'examDate', 'seatNum'])
+                        # exams = _explain_response(data,
+                        #                                ['roomName', 'startTime', 'endTime', 'courseName', 'courseCode',
+                        #                                 'examDate', 'seatNum'])
+                        exams = Exam.from_dict(sid)
                         self.proxy.close()
                         self.server.stop()
                         self.driver.quit()
                         return exams
         else:
-            exam_raw = get_exam_raw(self.sid)['data']['content']
-            exams = _explain_response(exam_raw,
-                                           ['roomName', 'startTime', 'endTime', 'courseName', 'courseCode', 'examDate',
-                                            'seatNum'])
+            exams = Exam.fetch(sid)
+
             return exams
 
-    def get_courses(self):
+    def get_courses(self, sid):
         if not self.is_success:
             return
         if self.use_selenium:
@@ -191,7 +177,7 @@ class CQUGetter:
                     EC.presence_of_element_located((By.XPATH,
                                                     '//*[@id="app"]/div/section/section/section/main/div[1]/div/div[2]/div/div/div[2]/div/div/div/div/div[2]/div/div[1]/div[1]/div[2]/div')))
                 ActionChains(driver=self.driver).click(input_element).perform()
-                ActionChains(driver=self.driver).send_keys('20204051').perform()
+                ActionChains(driver=self.driver).send_keys(sid).perform()
                 # TODO: 将手动延时修改为自动延时
                 ActionChains(driver=self.driver).move_by_offset(0, 80).perform()
                 time.sleep(2)
@@ -207,16 +193,14 @@ class CQUGetter:
                         _content = _response['content']
                         _result = json.loads(_content['text'])
                         data = _result['classTimetableVOList']
-                        courses = _explain_response(data, ['weekDayFormat', 'courseName', 'courseCode', 'classNbr',
-                                                                'roomName', 'instructorName', 'teachingWeekFormat',
-                                                                'periodFormat', 'credit'])
+                        # courses = _explain_response(data, ['weekDayFormat', 'courseName', 'courseCode', 'classNbr',
+                        #                                         'roomName', 'instructorName', 'teachingWeekFormat',
+                        #                                         'periodFormat', 'credit'])
+                        courses = CourseTimetable.from_dict(data)
                         self.proxy.close()
                         self.server.stop()
                         self.driver.quit()
                         return courses
         else:
-            course_raw = get_course_raw(self.session, self.sid)
-            courses = _explain_response(course_raw, ['weekDayFormat', 'courseName', 'courseCode', 'classNbr',
-                                                          'roomName', 'instructorName', 'teachingWeekFormat',
-                                                          'periodFormat', 'credit'])
+            courses = CourseTimetable.fetch(self.session, sid)
             return courses
