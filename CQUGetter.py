@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Union, Optional, Callable
 
 from bs4 import BeautifulSoup
 
@@ -35,16 +35,19 @@ class CQUGetter:
 
     def __init__(self, sid: str = None, driver_path: str = '/usr/bin/chromedriver',
                  proxy_path: str = './CQU321/browsermob-proxy-2.1.4/bin/browsermob-proxy', use_selenium=False,
-                 debug: bool = False) -> None:
+                 debug: bool = False,
+                 session_ctor: Callable[[], request.Session] = request.Session) -> None:
         """
         :param use_selenium: 是否使用selenium+proxy方案
         :param debug: 是否显示selenium浏览器界面
         :param driver_path: webdriver存放的地址
         :param proxy_path: proxy所在的位置
+        :param session_ctor: :class:`requests.Session` 对象的构造器
         """
         self.sid = sid
         self.is_success = False  # 用于确定是否已经登陆
         self.use_selenium = use_selenium  # 用于选择是否要调用selenium的方法
+        self.session_ctor = session_ctor
 
         if self.use_selenium:
             chrome_options = Options()
@@ -90,7 +93,7 @@ class CQUGetter:
                 self.is_success = True
         else:
             try:
-                self.session = Session()
+                self.session = self.session_ctor()
                 login(self.session, username, password)
                 access_mycqu(self.session)
             except:
@@ -108,7 +111,7 @@ class CQUGetter:
         :param password: 密码
         :return: 登陆成功返回true，否则返回false
         """
-        self.session = Session()
+        self.session = self.session_ctor()
         data = {'userId': username, 'password': password, 'userType': 'student'}
         login_page = self.session.post(url='http://mis.cqu.edu.cn/mis/login.jsp', data=data)
         soup = BeautifulSoup(login_page.content, 'lxml')
