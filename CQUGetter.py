@@ -131,7 +131,6 @@ class CQUGetter:
         if not self.is_success:
             return
         if self.use_selenium:
-            # TODO:将selenium成绩查询功能进行完全迁移
             try:
                 self.driver.get('https://my.cqu.edu.cn/sam')
                 WebDriverWait(self.driver, 10).until(
