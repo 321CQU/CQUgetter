@@ -1,7 +1,7 @@
 # CQUgetter
 对pymycqu和基于selenium+proxy实现的重庆大学学生相关信息查询功能
 
-目前支持研究生用户成绩查询
+目前同时支持研究生用户成绩查询以及本科生课表、成绩、排考、下学期选课结果查询
 
 ### 所使用的库
 mycqu、beautifulsoup4、selenium（本方案目前只支持chromedriver）、browsermobproxy
