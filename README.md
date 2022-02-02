@@ -16,3 +16,7 @@ mycqu、beautifulsoup4、selenium（本方案目前只支持chromedriver）、br
 
 ### 特别鸣谢
 Hagb 的项目 <https://github.com/Hagb/pymycqu> 本项目目前所返回的相关对象定义均出自pymycqu的定义
+
+### 许可
+
+AGPL 3.0
