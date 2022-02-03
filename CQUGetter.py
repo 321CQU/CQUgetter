@@ -148,7 +148,7 @@ class CQUGetter:
                     'User-Agent': 'User-Agent:Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)',
                     'Authorization': assess_token
                 }
-                res = requests.get('http://my.cqu.edu.cn/api/sam/score/student/score', headers=headers)
+                res = self.session_ctor().get('http://my.cqu.edu.cn/api/sam/score/student/score', headers=headers)
                 data = json.loads(res.content)['data']
                 score = []
                 for term, courses in data.items():
