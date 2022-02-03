@@ -36,13 +36,13 @@ class CQUGetter:
     def __init__(self, sid: str = None, driver_path: str = '/usr/bin/chromedriver',
                  proxy_path: str = './CQU321/browsermob-proxy-2.1.4/bin/browsermob-proxy', use_selenium=False,
                  debug: bool = False,
-                 session_ctor: Callable[[], request.Session] = request.Session) -> None:
+                 session_ctor: Callable[[], Session] = Session) -> None:
         """
         :param use_selenium: 是否使用selenium+proxy方案
         :param debug: 是否显示selenium浏览器界面
         :param driver_path: webdriver存放的地址
         :param proxy_path: proxy所在的位置
-        :param session_ctor: :class:`requests.Session` 对象的构造器
+        :param session_ctor: :class:`Session` 对象的构造器
         """
         self.sid = sid
         self.is_success = False  # 用于确定是否已经登陆
@@ -167,7 +167,7 @@ class CQUGetter:
 
         return score
 
-    def pg_get_score(self) -> Union[List[Dict, Any], None]:
+    def pg_get_score(self) -> Union[List[Dict], None]:
         """
         获取登陆的研究生账户的成绩
 
@@ -287,7 +287,7 @@ class CQUGetter:
             courses = CourseTimetable.fetch(self.session, self.sid)
             return courses
 
-    def get_enrollment(self) -> Optional[List[CourseTimetable], None]:
+    def get_enrollment(self) -> Optional[List[CourseTimetable]]:
         """
         获取下学期已选课表数据
 
