@@ -1,4 +1,5 @@
 import unittest
+import configparser
 
 from mycqu.auth import IncorrectLoginCredentials, NeedCaptcha
 
@@ -39,9 +40,12 @@ class CQUGetterTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         self.getter = CQUGetter()
-        self.sid = "********"
-        self.auth = "********"
-        self.password = "*********"
+        conn = configparser.ConfigParser()
+        conn.read("./test.cfg")
+
+        self.sid = conn.get('ACCOUNT', 'sid')
+        self.auth = conn.get('ACCOUNT', 'account')
+        self.password = conn.get('ACCOUNT', 'password')
 
     def test_login_with_incorrect_account(self):
         with self.assertRaises((IncorrectLoginCredentials, NeedCaptcha)):

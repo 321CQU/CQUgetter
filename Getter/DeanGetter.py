@@ -25,6 +25,10 @@ class DeanGetter(CQUGetter):
     def get_score_by_mycqu(self) -> List[Dict]:
         return list(map(CQUGetterParser.parse_score_object, Score.fetch(self.session)))
 
+    @CQUGetter.need_login_and_access
+    def get_minor_score_by_mycqu(self) -> List[Dict]:
+        return list(map(CQUGetterParser.parse_score_object, Score.fetch(self.session, isMinorBoo=True)))
+
     def get_exam_by_mycqu(self, stu_id: str) -> List[Dict]:
         return list(map(CQUGetterParser.parse_exam_object, Exam.fetch(stu_id)))
 
