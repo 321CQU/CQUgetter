@@ -2,12 +2,13 @@ from typing import Dict
 
 from requests import Session
 
-from .CQUGetter import CQUGetter
+from CQUGetter import CQUGetter
 from CQUGetterParser import CQUGetterParser
+from CQUGetterException import CardUnaccess
 
 from mycqu.card import *
 
-from CQUGetterException import AuthserverUnlogin, CardUnaccess
+__all__ = ('CardGetter',)
 
 
 class CardGetter(CQUGetter):

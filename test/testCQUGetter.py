@@ -4,7 +4,7 @@ import configparser
 from mycqu.auth import IncorrectLoginCredentials, NeedCaptcha
 
 from Getter.CQUGetter import CQUGetter
-from CQUGetterException import *
+from utils.CQUGetterException import *
 
 from functools import wraps
 

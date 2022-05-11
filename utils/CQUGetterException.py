@@ -1,3 +1,7 @@
+__all__ = ['CQUGetterException', 'Unlogin', 'Unaccess', 'AuthserverUnaccess', 'AuthserverUnlogin',
+           'CardUnaccess', 'LibUnaccess']
+
+
 class CQUGetterException(Exception):
     def __init__(self):
         super().__init__()
@@ -35,5 +39,12 @@ class CardUnaccess(Unaccess):
 
 class LibUnaccess(Unaccess):
     """
-    当访问lib.cqu.edu.cn时，为进行验证时引发
+    当访问lib.cqu.edu.cn时，未进行验证时引发
     """
+
+
+class LoginFail(CQUGetterException):
+    """
+    当登陆失败时抛出（可能为账号密码错误，也可能为网络超时）
+    """
+

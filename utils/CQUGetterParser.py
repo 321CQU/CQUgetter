@@ -8,6 +8,18 @@ from mycqu.library import BookInfo
 from mycqu.score import Score, GpaRanking
 from mycqu.card import EnergyFees, Bill, Card
 
+__all__ = ['CQUGetterParser']
+
+WEEKDAY = {
+    0: '一',
+    1: '二',
+    2: '三',
+    3: '四',
+    4: '五',
+    5: '六',
+    6: '日',
+}
+
 
 class CQUGetterParser:
     @staticmethod
@@ -28,7 +40,7 @@ class CQUGetterParser:
                     'Period': None}
         else:
             return {
-                'WeekDay': course_day_time.weekday,
+                'WeekDay': WEEKDAY[course_day_time.weekday],
                 'Period': CQUGetterParser._parse_two_params_tuple_to_str(course_day_time.period),
             }
 
@@ -100,7 +112,6 @@ class CQUGetterParser:
             'IsReturn': book_info.is_return,
         }
 
-
     @staticmethod
     def _parse_two_params_tuple_to_str(tuple: Optional[Tuple[int, int]]) -> str:
         if tuple is not None:
@@ -108,7 +119,7 @@ class CQUGetterParser:
 
     @staticmethod
     def _parse_weeks_to_str(weeks: List[str]) -> str:
-        return reduce(lambda x, y: x + y, weeks)
+        return reduce(lambda x, y: x + ',' + y, weeks)
 
     @staticmethod
     def _parse_date_to_str(date: date):

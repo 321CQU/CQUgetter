@@ -38,6 +38,13 @@ class DeanGetterTestCase(CQUGetterTestCase, unittest.TestCase):
         info = self.getter.get_person_info()
         self.assertIsInstance(info, Dict)
 
+    def test_get_login_cookies(self):
+        self.getter.login(self.auth, self.password)
+        self.getter.access()
+        authorization = self.getter.get_login_cookie()
+        self.assertIsInstance(authorization, str)
+        print(authorization)
+
 
 if __name__ == '__main__':
     unittest.main()

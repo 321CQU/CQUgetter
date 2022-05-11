@@ -2,10 +2,13 @@ from typing import Dict, List, Tuple
 
 from requests import Session
 
-from CQUGetterException import LibUnaccess
-from CQUGetterParser import CQUGetterParser
+from utils.CQUGetterException import LibUnaccess
+from utils.CQUGetterParser import CQUGetterParser
+from utils.BookSearchList import BookSearchSet
 from .CQUGetter import CQUGetter
 from mycqu.library import *
+
+__all__ = ['LibGetter']
 
 
 class LibGetter(CQUGetter):
@@ -35,4 +38,7 @@ class LibGetter(CQUGetter):
         statue, info = BookInfo.renew_book(self.session, self.user_info, book_id)
         return statue == 200, info
 
-
+    @CQUGetter.need_login_and_access
+    def search_book(self, keyword: str, page: int = 1, only_huxi: bool = True):
+        search_set = BookSearchSet(self.session)
+        return search_set.fetch(keyword, page, only_huxi)

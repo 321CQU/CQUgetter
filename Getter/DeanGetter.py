@@ -4,12 +4,13 @@ from typing import List, Dict, Optional, Union
 from mycqu import access_mycqu
 
 from .CQUGetter import CQUGetter
-from CQUGetterException import AuthserverUnlogin, AuthserverUnaccess
-from CQUGetterParser import CQUGetterParser
+from utils.CQUGetterParser import CQUGetterParser
 
 from mycqu.score import Score, GpaRanking
 from mycqu.exam import Exam
 from mycqu.course import CourseTimetable, CQUSession
+
+__all__ = ['DeanGetter']
 
 
 class DeanGetter(CQUGetter):
@@ -27,7 +28,7 @@ class DeanGetter(CQUGetter):
 
     @CQUGetter.need_login_and_access
     def get_minor_score_by_mycqu(self) -> List[Dict]:
-        return list(map(CQUGetterParser.parse_score_object, Score.fetch(self.session, isMinorBoo=True)))
+        return list(map(CQUGetterParser.parse_score_object, Score.fetch(self.session, True)))
 
     def get_exam_by_mycqu(self, stu_id: str) -> List[Dict]:
         return list(map(CQUGetterParser.parse_exam_object, Exam.fetch(stu_id)))
@@ -55,4 +56,3 @@ class DeanGetter(CQUGetter):
             'Sid': data['code'],
             'Name': data['name']
         }
-
