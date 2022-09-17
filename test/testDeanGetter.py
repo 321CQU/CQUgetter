@@ -1,7 +1,7 @@
 import unittest
 from typing import List, Dict
 
-from Getter.DeanGetter import DeanGetter
+from CQUGetter.Getter.DeanGetter import DeanGetter
 from test.testCQUGetter import CQUGetterTestCase
 
 
@@ -38,12 +38,27 @@ class DeanGetterTestCase(CQUGetterTestCase, unittest.TestCase):
         info = self.getter.get_person_info()
         self.assertIsInstance(info, Dict)
 
+    @CQUGetterTestCase.login_and_access_test
+    def test_get_term_info(self):
+        info = self.getter.get_term_info(0)
+        self.assertIsInstance(info, Dict)
+
+    @CQUGetterTestCase.login_and_access_test
+    def test_get_enroll_info(self):
+        info = self.getter.get_enroll_info()
+        self.assertIsInstance(info, Dict)
+
+    @CQUGetterTestCase.login_and_access_test
+    def test_get_enroll_detail(self):
+        info = self.getter.get_enroll_detail('10000006730')
+        self.assertIsInstance(info, List)
+
     def test_get_login_cookies(self):
         self.getter.login(self.auth, self.password)
         self.getter.access()
         authorization = self.getter.get_login_cookie()
         self.assertIsInstance(authorization, str)
-        print(authorization)
+        # print(authorization)
 
 
 if __name__ == '__main__':

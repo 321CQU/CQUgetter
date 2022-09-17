@@ -11,7 +11,7 @@ class BookSearchSet:
     def __init__(self, session: Session):
         self.session = session
 
-    def fetch(self, keyword: str, page: int = 1, only_huxi: bool = False):
+    def fetch(self, keyword: str, page: int = 1, only_huxi: bool = False) -> List[Dict]:
         params = {
             'key': 'U=' + keyword,
             'cf': 'TY=1#图书[_]M=1#纸本馆藏' + ("[_]DL=虎溪图书馆@cqu#虎溪图书馆" if only_huxi else ''),
@@ -21,10 +21,10 @@ class BookSearchSet:
 
         res = self.session.get(self.search_url, params=params)
         books = self.parse_search_html(res.text)
-        self.get_book_position(books)
+        self._get_book_position(books)
         return books
 
-    def get_book_position(self, books: List[Dict]):
+    def _get_book_position(self, books: List[Dict]):
         for book in books:
             book.update({'Pos': self.get_position_by_bid(self.session, book['BookId'])})
 
@@ -45,7 +45,11 @@ class BookSearchSet:
             year = publisher_tags[-1].text.strip()
             author_str = book.find_all('dd', class_=False)[-1].text.strip()[3:].strip()
             authors = author_str.split('\n')
-            introduction = book.find('span', 'abstract').text.strip()
+            introduction_element = book.find('dd', 'hideRemark')
+            if introduction_element:
+                introduction = introduction_element.find('span', 'abstract').text.strip()
+            else:
+                introduction = ''
             temp = {
                 'BookId': book_id,
                 'Title': title,
@@ -86,7 +90,7 @@ class BookSearchSet:
         return pos_list
 
     @staticmethod
-    def get_position_by_bid(session: Session, book_id: str):
+    def get_position_by_bid(session: Session, book_id: str) -> List[Dict]:
         params = {
             'bookid': book_id,
         }

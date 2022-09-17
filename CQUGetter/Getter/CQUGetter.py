@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from functools import wraps
 
-from utils.CQUGetterException import AuthserverUnlogin, AuthserverUnaccess, LoginFail
+from CQUGetter.utils.CQUGetterException import AuthserverUnlogin, AuthserverUnaccess, LoginFail
 
 __all__ = ('CQUGetter',)
 

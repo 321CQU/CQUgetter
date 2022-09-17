@@ -1,10 +1,12 @@
 from typing import Dict
 
+from mycqu import access_mycqu
 from requests import Session
 
-from CQUGetter import CQUGetter
-from CQUGetterParser import CQUGetterParser
-from CQUGetterException import CardUnaccess
+from CQUGetter.Getter.CQUGetter import CQUGetter
+from CQUGetter.Getter.DeanGetter import DeanGetter
+from CQUGetter.utils.CQUGetterParser import CQUGetterParser
+from CQUGetter.utils.CQUGetterException import CardUnaccess
 
 from mycqu.card import *
 
@@ -12,19 +14,18 @@ __all__ = ('CardGetter',)
 
 
 class CardGetter(CQUGetter):
-    def __init__(self):
-        super().__init__()
-
     def is_access(self):
         if not self._is_access:
             raise CardUnaccess
 
     @staticmethod
     def _card_access_by_mycqu(session: Session):
+        access_mycqu(session)
         access_card(session)
 
     @CQUGetter.need_login
     def access(self):
+        DeanGetter._authserver_access_by_mycqu(self.session)
         CardGetter._card_access_by_mycqu(self.session)
         self._is_access = True
 

@@ -1,7 +1,7 @@
 import unittest
-from typing import List
+from typing import List, Tuple
 
-from Getter.LibGetter import LibGetter
+from CQUGetter.Getter.LibGetter import LibGetter
 from test.testCQUGetter import CQUGetterTestCase
 
 
@@ -26,11 +26,22 @@ class LibGetterTestCase(CQUGetterTestCase, unittest.TestCase):
         self.assertIsInstance(books, List)
 
     @CQUGetterTestCase.login_and_access_test
+    def test_renew_book(self):
+        books = self.getter.renew_book("123456")
+        self.assertIsInstance(books, Tuple)
+
+    @CQUGetterTestCase.login_and_access_test
     def test_search_book(self):
-        books_1 = self.getter.search_book("深度学习", 1)
+        books_1 = self.getter.search_book("操作系统", 1, False)
         books_2 = self.getter.search_book("深度学习", 2)
         self.assertEqual(len(books_1), 10)
         self.assertEqual(len(books_2), 10)
+
+    @CQUGetterTestCase.login_and_access_test
+    def test_get_book_pos(self):
+        book_id = '31522336328757'
+        result = self.getter.get_book_pos(book_id)
+        self.assertIsInstance(result, List)
 
 
 if __name__ == '__main__':

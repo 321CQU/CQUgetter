@@ -1,6 +1,6 @@
 import unittest
 
-from Getter.CardGetter import CardGetter
+from CQUGetter.Getter.CardGetter import CardGetter
 from test.testCQUGetter import CQUGetterTestCase
 
 

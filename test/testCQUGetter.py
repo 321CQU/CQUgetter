@@ -1,12 +1,13 @@
 import unittest
 import configparser
 
-from mycqu.auth import IncorrectLoginCredentials, NeedCaptcha
+from mycqu.exception import IncorrectLoginCredentials, NeedCaptcha
 
-from Getter.CQUGetter import CQUGetter
-from utils.CQUGetterException import *
+from CQUGetter.Getter.CQUGetter import CQUGetter
 
 from functools import wraps
+
+from CQUGetter.utils.CQUGetterException import Unlogin, Unaccess, AuthserverUnlogin
 
 
 class CQUGetterTestCase(unittest.TestCase):

@@ -1,10 +1,11 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Callable
 
+from mycqu import access_mycqu
 from requests import Session
 
-from utils.CQUGetterException import LibUnaccess
-from utils.CQUGetterParser import CQUGetterParser
-from utils.BookSearchList import BookSearchSet
+from CQUGetter.utils.CQUGetterException import LibUnaccess
+from CQUGetter.utils.CQUGetterParser import CQUGetterParser
+from CQUGetter.utils.BookSearchList import BookSearchSet
 from .CQUGetter import CQUGetter
 from mycqu.library import *
 
@@ -12,8 +13,8 @@ __all__ = ['LibGetter']
 
 
 class LibGetter(CQUGetter):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, session_ctor: Callable[[], Session] = Session):
+        super(LibGetter, self).__init__(session_ctor)
         self.user_info = None
 
     def is_access(self) -> None:
@@ -22,6 +23,7 @@ class LibGetter(CQUGetter):
 
     @staticmethod
     def _lib_access_by_mycqu(session: Session) -> Dict:
+        access_mycqu(session)
         return access_library(session)
 
     @CQUGetter.need_login
@@ -35,10 +37,14 @@ class LibGetter(CQUGetter):
 
     @CQUGetter.need_login_and_access
     def renew_book(self, book_id: str) -> Tuple[bool, str]:
-        statue, info = BookInfo.renew_book(self.session, self.user_info, book_id)
-        return statue == 200, info
+        res = BookInfo.renew_book(self.session, self.user_info, book_id)
+        return res != "ok", res
 
     @CQUGetter.need_login_and_access
     def search_book(self, keyword: str, page: int = 1, only_huxi: bool = True):
         search_set = BookSearchSet(self.session)
         return search_set.fetch(keyword, page, only_huxi)
+
+    @CQUGetter.need_login_and_access
+    def get_book_pos(self, book_id: str):
+        return BookSearchSet.get_position_by_bid(self.session, book_id)

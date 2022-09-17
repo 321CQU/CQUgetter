@@ -1,5 +1,5 @@
 __all__ = ['CQUGetterException', 'Unlogin', 'Unaccess', 'AuthserverUnaccess', 'AuthserverUnlogin',
-           'CardUnaccess', 'LibUnaccess']
+           'CardUnaccess', 'LibUnaccess', 'TermInfoGetError', 'TermNotExist']
 
 
 class CQUGetterException(Exception):
@@ -48,3 +48,14 @@ class LoginFail(CQUGetterException):
     当登陆失败时抛出（可能为账号密码错误，也可能为网络超时）
     """
 
+
+class TermInfoGetError(CQUGetterException):
+    """
+    当无法获取学期信息时抛出
+    """
+
+
+class TermNotExist(CQUGetterException):
+    """
+    搜索目标学期不存在时抛出
+    """
