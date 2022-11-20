@@ -38,7 +38,7 @@ class LibGetter(CQUGetter):
     @CQUGetter.need_login_and_access
     def renew_book(self, book_id: str) -> Tuple[bool, str]:
         res = BookInfo.renew_book(self.session, self.user_info, book_id)
-        return res != "ok", res
+        return res == "ok", res
 
     @CQUGetter.need_login_and_access
     def search_book(self, keyword: str, page: int = 1, only_huxi: bool = True):
@@ -48,3 +48,7 @@ class LibGetter(CQUGetter):
     @CQUGetter.need_login_and_access
     def get_book_pos(self, book_id: str):
         return BookSearchSet.get_position_by_bid(self.session, book_id)
+
+    @CQUGetter.need_login_and_access
+    def get_book_detail(self, book_id: str):
+        return BookSearchSet.get_book_detail(self.session, book_id)

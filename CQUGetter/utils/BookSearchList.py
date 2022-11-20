@@ -7,6 +7,7 @@ from requests import Session
 class BookSearchSet:
     search_url = "http://lib.cqu.edu.cn/asset/search"
     position_url = "http://lib.cqu.edu.cn/asset/getajaxpapercollection"
+    detail_url = "http://lib.cqu.edu.cn/asset/detail/0/"
 
     def __init__(self, session: Session):
         self.session = session
@@ -97,3 +98,37 @@ class BookSearchSet:
         res = session.get(BookSearchSet.position_url, params=params)
 
         return BookSearchSet.parse_position_html(res.text)
+
+    @staticmethod
+    def parse_detail_html(html: str) -> Dict:
+        soup = BeautifulSoup(html, features="html.parser")
+
+        cover_tag = soup.find('div', 'cover').find('img')
+        cover_url = cover_tag['src'] if cover_tag else None
+
+        author_tag = soup.find('p', 'author')
+        authors = []
+        for author in author_tag.find_all('a'):
+            authors.append(author.text.strip())
+
+        detail = soup.find('div', 'article-detail')
+
+        publisher = detail.find('p', 'from').a.text.strip()
+        year_tag = detail.find_all('p', 'class')[0]
+        introduction_tag = detail.find_all('p', 'abstrack')[-1]
+
+        return {
+            'Title': soup.find('div', class_='article-summary').find('h1')['title'],
+            'ImgUrl': cover_url,
+            'Publisher': publisher,
+            'Year': [text for text in year_tag.stripped_strings][-1],
+            'Authors': authors,
+            'Introduction': [text for text in introduction_tag.stripped_strings][-1]
+        }
+
+    @staticmethod
+    def get_book_detail(session: Session, book_id: str) -> Dict:
+        res = session.get(BookSearchSet.detail_url + book_id)
+
+        return BookSearchSet.parse_detail_html(res.text)
+

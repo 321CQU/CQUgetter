@@ -1,5 +1,6 @@
 __all__ = ['CQUGetterException', 'Unlogin', 'Unaccess', 'AuthserverUnaccess', 'AuthserverUnlogin',
-           'CardUnaccess', 'LibUnaccess', 'TermInfoGetError', 'TermNotExist']
+           'CardUnaccess', 'LibUnaccess', 'TermInfoGetError', 'TermNotExist', 'LoginFail', 'CaptchaIncorrect',
+           'InvalidCaptcha',]
 
 
 class CQUGetterException(Exception):
@@ -58,4 +59,16 @@ class TermInfoGetError(CQUGetterException):
 class TermNotExist(CQUGetterException):
     """
     搜索目标学期不存在时抛出
+    """
+
+
+class CaptchaIncorrect(CQUGetterException):
+    """
+    验证码错误时抛出
+    """
+
+
+class InvalidCaptcha(CQUGetterException):
+    """
+    无效的验证码
     """
