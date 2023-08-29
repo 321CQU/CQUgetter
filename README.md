@@ -3,6 +3,9 @@
 
 目前同时支持研究生用户成绩查询以及本科生课表、成绩、排考、下学期选课结果查询
 
+# Warning！！！
+**本仓库已经停止维护，321CQU将不再采用混合方案作为教务网查询后端，但是仍然在维护并使用pymycqu，请到组织仓库页面查看我们最新的仓库**
+
 ### 所使用的库
 mycqu、beautifulsoup4、selenium（本方案目前只支持chromedriver）、browsermobproxy
 
